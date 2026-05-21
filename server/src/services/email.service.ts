@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM = process.env.EMAIL_FROM || 'noreply@stratatrade.net';
 
 interface EmailOptions {
@@ -14,7 +14,7 @@ interface EmailOptions {
  * All emails are plain text for MVP — no HTML templates.
  */
 export async function sendEmail(opts: EmailOptions): Promise<void> {
-  if (process.env.NODE_ENV === 'test') return; // suppress in test env
+  if (!resend || process.env.NODE_ENV === 'test') return; // skip if no API key or in test
 
   const { error } = await resend.emails.send({
     from: FROM,
