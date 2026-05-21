@@ -2,6 +2,7 @@ import React, { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { AuthUser } from '../types';
+import { api } from '../services/api';
 
 export default function Login() {
   const { login } = useAuth();
@@ -17,18 +18,10 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json() as { token: string; user: AuthUser; forcePasswordChange?: boolean; error?: string };
-
-      if (!res.ok) {
-        setError(data.error || 'Login failed');
-        return;
-      }
+      const data = await api.post<{ token: string; user: AuthUser; forcePasswordChange?: boolean }>(
+        '/auth/login',
+        { email, password }
+      );
 
       const user: AuthUser = { ...data.user, forcePasswordChange: data.forcePasswordChange };
       login(data.token, user);
@@ -45,8 +38,8 @@ export default function Login() {
         trade:            '/trade',
       };
       navigate(redirectMap[user.role] || '/login');
-    } catch {
-      setError('Unable to connect. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to connect. Please try again.');
     } finally {
       setLoading(false);
     }
