@@ -83,11 +83,22 @@ export default function TradesList() {
                       </span>
                     )}
                   </td>
-                  <td className="table-cell flex gap-3">
-                    <Link to={`/admin/trades/${t.id}`} className="text-blue-600 hover:underline text-sm">View</Link>
-                    <button className="text-sm text-gray-500 hover:underline" onClick={() => toggle(t.id, t.is_active)}>
-                      {t.is_active ? 'Deactivate' : 'Activate'}
-                    </button>
+                  <td className="table-cell">
+                    <div className="flex items-center gap-2">
+                      <Link to={`/admin/trades/${t.id}`}
+                        className="px-3 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200">
+                        View
+                      </Link>
+                      <button
+                        onClick={() => toggle(t.id, t.is_active)}
+                        className={`px-3 py-1 rounded text-xs font-medium border ${
+                          t.is_active
+                            ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+                            : 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100'
+                        }`}>
+                        {t.is_active ? 'Deactivate' : 'Activate'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
