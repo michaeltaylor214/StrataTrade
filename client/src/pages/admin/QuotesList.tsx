@@ -43,7 +43,12 @@ export default function QuotesList() {
                       ? <span className="text-xs text-green-600 font-medium">Yes</span>
                       : <span className="text-xs text-gray-400">No</span>}
                   </td>
-                  <td className="table-cell"><Link to={`/admin/quotes/${q.id}`} className="text-blue-600 hover:underline text-sm">View</Link></td>
+                  <td className="table-cell">
+                    <Link to={`/admin/quotes/${q.id}`}
+                      className="px-3 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200">
+                      View
+                    </Link>
+                  </td>
                 </tr>
               ))}
               {quotes.length === 0 && <tr><td colSpan={6} className="table-cell text-center text-gray-400">No quote requests</td></tr>}

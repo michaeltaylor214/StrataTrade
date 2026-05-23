@@ -82,7 +82,10 @@ export default function JobsList() {
                     {j.scheduled_date ? new Date(j.scheduled_date).toLocaleDateString('en-AU') : '—'}
                   </td>
                   <td className="table-cell">
-                    <Link to={`/admin/jobs/${j.id}`} className="text-blue-600 hover:underline text-sm">View</Link>
+                    <Link to={`/admin/jobs/${j.id}`}
+                      className="px-3 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200">
+                      View
+                    </Link>
                   </td>
                 </tr>
               ))}

@@ -42,9 +42,17 @@ export default function AuditsList() {
                   <td className="table-cell capitalize">{a.overall_condition || '—'}</td>
                   <td className="table-cell"><StatusBadge value={a.status} /></td>
                   <td className="table-cell text-gray-500">{a.conducted_by_name}</td>
-                  <td className="table-cell flex gap-3">
-                    <Link to={`/admin/audits/${a.id}`} className="text-blue-600 hover:underline text-sm">Edit</Link>
-                    <Link to={`/admin/audits/${a.id}/report`} className="text-gray-500 hover:underline text-sm">Report</Link>
+                  <td className="table-cell">
+                    <div className="flex items-center gap-2">
+                      <Link to={`/admin/audits/${a.id}`}
+                        className="px-3 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200">
+                        Edit
+                      </Link>
+                      <Link to={`/admin/audits/${a.id}/report`}
+                        className="px-3 py-1 rounded text-xs font-medium bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200">
+                        Report
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -49,7 +49,12 @@ export default function MaintenanceList() {
                   <td className="table-cell text-gray-500 capitalize text-xs">{r.submitted_by_role.replace(/_/g,' ')}</td>
                   <td className="table-cell"><StatusBadge value={r.status} /></td>
                   <td className="table-cell text-gray-500">{new Date(r.created_at).toLocaleDateString('en-AU')}</td>
-                  <td className="table-cell"><Link to={`/admin/maintenance/${r.id}`} className="text-blue-600 hover:underline text-sm">Review</Link></td>
+                  <td className="table-cell">
+                    <Link to={`/admin/maintenance/${r.id}`}
+                      className="px-3 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200">
+                      Review
+                    </Link>
+                  </td>
                 </tr>
               ))}
               {requests.length === 0 && <tr><td colSpan={7} className="table-cell text-center text-gray-400">No requests</td></tr>}

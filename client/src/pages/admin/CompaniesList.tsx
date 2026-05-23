@@ -80,7 +80,13 @@ export default function CompaniesList() {
                     </span>
                   </td>
                   <td className="table-cell">
-                    <button className="text-sm text-blue-600 hover:underline" onClick={() => toggleActive(c.id, c.is_active)}>
+                    <button
+                      onClick={() => toggleActive(c.id, c.is_active)}
+                      className={`px-3 py-1 rounded text-xs font-medium border ${
+                        c.is_active
+                          ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+                          : 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100'
+                      }`}>
                       {c.is_active ? 'Deactivate' : 'Activate'}
                     </button>
                   </td>
