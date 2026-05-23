@@ -24,6 +24,7 @@ import SchemesList from './pages/admin/SchemesList';
 import SchemeDetail from './pages/admin/SchemeDetail';
 import SchemeForm from './pages/admin/SchemeForm';
 import CompaniesList from './pages/admin/CompaniesList';
+import CompanyDetail from './pages/admin/CompanyDetail';
 import JobsList from './pages/admin/JobsList';
 import JobDetail from './pages/admin/JobDetail';
 import JobForm from './pages/admin/JobForm';
@@ -78,6 +79,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           {/* Admin */}
           <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/companies" element={<ProtectedRoute allowedRoles={['admin']}><CompaniesList /></ProtectedRoute>} />
+          <Route path="/admin/companies/:id" element={<ProtectedRoute allowedRoles={['admin']}><CompanyDetail /></ProtectedRoute>} />
           <Route path="/admin/schemes" element={<ProtectedRoute allowedRoles={['admin']}><SchemesList /></ProtectedRoute>} />
           <Route path="/admin/schemes/new" element={<ProtectedRoute allowedRoles={['admin']}><SchemeForm /></ProtectedRoute>} />
           <Route path="/admin/schemes/:id" element={<ProtectedRoute allowedRoles={['admin']}><SchemeDetail /></ProtectedRoute>} />

@@ -6,10 +6,15 @@ const router = Router();
 router.use(authenticate);
 
 // Strata companies (admin only)
-router.get('/companies',          adminOnly, ctrl.listCompanies);
-router.post('/companies',         adminOnly, ctrl.createCompany);
-router.patch('/companies/:id',    adminOnly, ctrl.updateCompany);
-router.delete('/companies/:id',   adminOnly, ctrl.deleteCompany);
+router.get('/companies',             adminOnly, ctrl.listCompanies);
+router.post('/companies',            adminOnly, ctrl.createCompany);
+router.get('/companies/:id',         adminOnly, ctrl.getCompany);
+router.patch('/companies/:id',       adminOnly, ctrl.updateCompany);
+router.delete('/companies/:id',      adminOnly, ctrl.deleteCompany);
+
+// Preferred trades per scheme
+router.post('/:schemeId/preferred-trades',    adminOnly, ctrl.addPreferredTrade);
+router.delete('/preferred-trades/:id',        adminOnly, ctrl.removePreferredTrade);
 
 // Schemes
 router.get('/',                                     adminOrStrata, ctrl.listSchemes);

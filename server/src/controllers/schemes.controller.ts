@@ -27,6 +27,62 @@ export async function createCompany(req: Request, res: Response): Promise<void> 
   res.status(201).json(result.rows[0]);
 }
 
+export async function getCompany(req: Request, res: Response): Promise<void> {
+  const { id } = req.params;
+
+  const companyResult = await pool.query(
+    'SELECT * FROM strata_companies WHERE id = $1',
+    [id]
+  );
+  if (companyResult.rows.length === 0) { res.status(404).json({ error: 'Company not found' }); return; }
+
+  const schemesResult = await pool.query(
+    `SELECT s.*,
+            COALESCE(json_agg(
+              json_build_object(
+                'id', spt.id,
+                'trade_id', spt.trade_id,
+                'trade_category', spt.trade_category,
+                'trade_company', t.company_name,
+                'trade_name', t.full_name
+              )
+            ) FILTER (WHERE spt.id IS NOT NULL), '[]') AS preferred_trades
+     FROM schemes s
+     LEFT JOIN scheme_preferred_trades spt ON spt.scheme_id = s.id
+     LEFT JOIN trades t ON t.id = spt.trade_id
+     WHERE s.strata_company_id = $1
+     GROUP BY s.id
+     ORDER BY s.name`,
+    [id]
+  );
+
+  res.json({ ...companyResult.rows[0], schemes: schemesResult.rows });
+}
+
+export async function addPreferredTrade(req: Request, res: Response): Promise<void> {
+  const { schemeId } = req.params;
+  const { tradeId, tradeCategory } = req.body as { tradeId: number; tradeCategory: string };
+
+  if (!tradeId || !tradeCategory) {
+    res.status(400).json({ error: 'tradeId and tradeCategory are required' }); return;
+  }
+
+  const result = await pool.query(
+    `INSERT INTO scheme_preferred_trades (scheme_id, trade_id, trade_category)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (scheme_id, trade_category) DO UPDATE SET trade_id = EXCLUDED.trade_id
+     RETURNING *`,
+    [schemeId, tradeId, tradeCategory]
+  );
+  res.json(result.rows[0]);
+}
+
+export async function removePreferredTrade(req: Request, res: Response): Promise<void> {
+  const { id } = req.params;
+  await pool.query('DELETE FROM scheme_preferred_trades WHERE id = $1', [id]);
+  res.status(204).send();
+}
+
 export async function updateCompany(req: Request, res: Response): Promise<void> {
   const { id } = req.params;
   const { name, address, contactName, contactEmail, contactPhone, isActive } = req.body as Record<string, unknown>;

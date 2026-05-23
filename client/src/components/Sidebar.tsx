@@ -10,7 +10,7 @@ interface NavItem {
 const NAV_ITEMS: Record<string, NavItem[]> = {
   admin: [
     { label: 'Dashboard',         to: '/admin' },
-    { label: 'Companies',         to: '/admin/companies' },
+    { label: 'Strata Managers',   to: '/admin/companies' },
     { label: 'Schemes',           to: '/admin/schemes' },
     { label: 'Jobs',              to: '/admin/jobs' },
     { label: 'Building Audits',   to: '/admin/audits' },

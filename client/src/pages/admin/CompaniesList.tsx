@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import PortalLayout from '../../components/PortalLayout';
 import { api } from '../../services/api';
 import { StrataCompany } from '../../types';
@@ -34,7 +35,7 @@ export default function CompaniesList() {
   }
 
   return (
-    <PortalLayout title="Strata Companies">
+    <PortalLayout title="Strata Managers">
       <div className="flex justify-end mb-4">
         <button className="btn-primary" onClick={() => setShowForm(v => !v)}>
           {showForm ? 'Cancel' : '+ New Company'}
@@ -43,7 +44,7 @@ export default function CompaniesList() {
 
       {showForm && (
         <div className="card p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Create Company</h2>
+          <h2 className="font-semibold text-gray-900 mb-4">Create Strata Management Company</h2>
           {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
           <form onSubmit={handleCreate} className="grid grid-cols-2 gap-4">
             <div><label className="label">Company name *</label><input className="input" value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} required /></div>
@@ -71,8 +72,17 @@ export default function CompaniesList() {
             <tbody>
               {companies.map(c => (
                 <tr key={c.id} className="table-row">
-                  <td className="table-cell font-medium">{c.name}</td>
-                  <td className="table-cell text-gray-500">{c.contact_name}<br/><span className="text-xs">{c.contact_email}</span></td>
+                  <td className="table-cell">
+                    <Link to={`/admin/companies/${c.id}`} className="font-medium text-blue-700 hover:underline">
+                      {c.name}
+                    </Link>
+                    {c.address && <p className="text-xs text-gray-400 mt-0.5">{c.address}</p>}
+                  </td>
+                  <td className="table-cell text-gray-500">
+                    {c.contact_name}
+                    <br/>
+                    <span className="text-xs">{c.contact_email}</span>
+                  </td>
                   <td className="table-cell font-mono text-xs">{c.company_code}</td>
                   <td className="table-cell">
                     <span className={`text-xs font-medium ${c.is_active ? 'text-green-600' : 'text-gray-400'}`}>
@@ -80,18 +90,27 @@ export default function CompaniesList() {
                     </span>
                   </td>
                   <td className="table-cell">
-                    <button
-                      onClick={() => toggleActive(c.id, c.is_active)}
-                      className={`px-3 py-1 rounded text-xs font-medium border ${
-                        c.is_active
-                          ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
-                          : 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100'
-                      }`}>
-                      {c.is_active ? 'Deactivate' : 'Activate'}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <Link to={`/admin/companies/${c.id}`}
+                        className="px-3 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200">
+                        View
+                      </Link>
+                      <button
+                        onClick={() => toggleActive(c.id, c.is_active)}
+                        className={`px-3 py-1 rounded text-xs font-medium border ${
+                          c.is_active
+                            ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+                            : 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100'
+                        }`}>
+                        {c.is_active ? 'Deactivate' : 'Activate'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
+              {companies.length === 0 && (
+                <tr><td colSpan={5} className="table-cell text-center text-gray-400">No companies yet</td></tr>
+              )}
             </tbody>
           </table>
         )}
