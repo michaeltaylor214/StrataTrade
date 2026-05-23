@@ -1,8 +1,12 @@
 import React, { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { api } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
+import { AuthUser } from '../types';
 
 export default function RegisterStrata() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '', companyCode: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,16 +23,20 @@ export default function RegisterStrata() {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/register/strata', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.name, email: form.email, password: form.password, companyCode: form.companyCode }),
-      });
-      const data = await res.json() as { token?: string; error?: string };
-      if (!res.ok) { setError(data.error || 'Registration failed'); return; }
+      const data = await api.post<{ token: string; user: { id: number; name: string; email: string; strata_company_id: number } }>(
+        '/auth/register/strata',
+        { name: form.name, email: form.email, password: form.password, companyCode: form.companyCode }
+      );
+      const authUser: AuthUser = {
+        userId: data.user.id,
+        role: 'strata_manager',
+        email: data.user.email,
+        strataCompanyId: data.user.strata_company_id,
+      };
+      login(data.token, authUser);
       navigate('/strata');
-    } catch {
-      setError('Unable to connect. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to connect. Please try again.');
     } finally {
       setLoading(false);
     }

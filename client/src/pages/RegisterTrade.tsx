@@ -1,5 +1,6 @@
 import React, { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { api } from '../services/api';
 
 const CATEGORIES = ['Electrical', 'Fire Safety', 'Plumbing', 'Lift', 'Pool', 'Building/General'];
 
@@ -24,20 +25,14 @@ export default function RegisterTrade() {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/register/trade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: form.fullName, companyName: form.companyName, abn: form.abn,
-          tradeCategory: form.tradeCategory, licenceNumber: form.licenceNumber,
-          insuranceExpiryDate: form.insuranceExpiryDate, email: form.email, password: form.password,
-        }),
+      await api.post('/auth/register/trade', {
+        fullName: form.fullName, companyName: form.companyName, abn: form.abn,
+        tradeCategory: form.tradeCategory, licenceNumber: form.licenceNumber,
+        insuranceExpiryDate: form.insuranceExpiryDate, email: form.email, password: form.password,
       });
-      const data = await res.json() as { error?: string };
-      if (!res.ok) { setError(data.error || 'Registration failed'); return; }
       navigate('/login?registered=trade');
-    } catch {
-      setError('Unable to connect. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to connect. Please try again.');
     } finally {
       setLoading(false);
     }
