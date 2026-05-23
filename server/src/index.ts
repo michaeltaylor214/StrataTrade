@@ -18,8 +18,22 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ── Middleware ──────────────────────────────────────────────────────────────
+// Allow requests from the primary domain, the Vercel preview URL, and localhost.
+const allowedOrigins = [
+  process.env.APP_URL,                      // e.g. https://stratatrade.net
+  'https://www.stratatrade.net',
+  'https://strata-trade.vercel.app',        // keep working during transition
+  'http://localhost:5173',
+  'http://localhost:3000',
+].filter(Boolean) as string[];
+
 app.use(cors({
-  origin: process.env.APP_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (server-to-server, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true,
 }));
 app.use(express.json());
