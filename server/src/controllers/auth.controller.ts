@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import pool from '../db';
 import { signToken } from '../utils/jwt';
 import { sendEmail } from '../services/email.service';
+import { verifyTradeLicence } from '../services/nsw-trades.service';
 import { UserRole } from '../types/auth';
 
 const BCRYPT_ROUNDS = 12;
@@ -71,8 +72,8 @@ export async function registerTrade(req: Request, res: Response): Promise<void> 
     licenceNumber, insuranceExpiryDate, email, password,
   } = req.body as Record<string, string>;
 
-  if (!fullName || !companyName || !abn || !tradeCategory || !email || !password) {
-    res.status(400).json({ error: 'Required fields: fullName, companyName, abn, tradeCategory, email, password' });
+  if (!fullName || !companyName || !abn || !tradeCategory || !licenceNumber || !email || !password) {
+    res.status(400).json({ error: 'Required fields: fullName, companyName, abn, tradeCategory, licenceNumber, email, password' });
     return;
   }
 
@@ -93,33 +94,63 @@ export async function registerTrade(req: Request, res: Response): Promise<void> 
     return;
   }
 
+  // Verify licence with NSW Trades Register API
+  // API_NOT_CONFIGURED → null (admin decides manually)
+  // VERIFIED           → true
+  // anything else      → false (admin reviews)
+  const licenceCheck = await verifyTradeLicence(licenceNumber, fullName, companyName);
+  const nswVerified  = licenceCheck.status === 'API_NOT_CONFIGURED'
+    ? null
+    : licenceCheck.verified;
+
   const hash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
   const result = await pool.query(
     `INSERT INTO trades
-       (full_name, company_name, abn, trade_category, licence_number, insurance_expiry_date, email, password_hash, is_active)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,false)
+       (full_name, company_name, abn, trade_category, licence_number, insurance_expiry_date,
+        email, password_hash, is_active, nsw_licence_verified, nsw_licence_status)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,false,$9,$10)
      RETURNING id, full_name, company_name, email, trade_category, is_active, created_at`,
     [
       fullName.trim(),
       companyName.trim(),
       abn.trim(),
       tradeCategory,
-      licenceNumber?.trim() || null,
+      licenceNumber.trim(),
       insuranceExpiryDate || null,
       email.toLowerCase().trim(),
       hash,
+      nswVerified,
+      licenceCheck.message,
     ]
   );
 
-  // Notify admin
+  // Admin notification — flag urgency based on verification result
+  const verificationLine = licenceCheck.status === 'API_NOT_CONFIGURED'
+    ? 'NSW Licence Check: Not configured — verify manually'
+    : licenceCheck.verified
+      ? `NSW Licence Check: ✓ VERIFIED (${licenceCheck.holderName ?? ''}${licenceCheck.licenceType ? ' — ' + licenceCheck.licenceType : ''})`
+      : `NSW Licence Check: ⚠ FAILED — ${licenceCheck.message} — MANUAL REVIEW REQUIRED`;
+
+  const subject = licenceCheck.verified
+    ? 'New trade registered — licence verified'
+    : licenceCheck.status === 'API_NOT_CONFIGURED'
+      ? 'New trade registered — awaiting activation'
+      : 'New trade registered — LICENCE CHECK FAILED — manual review required';
+
   await sendEmail({
     to: process.env.ADMIN_ALERT_EMAIL || 'admin@platform.com',
-    subject: 'New trade registered — awaiting activation',
-    text: `A new trade has registered and is awaiting activation.\n\nName: ${fullName}\nCompany: ${companyName}\nCategory: ${tradeCategory}\nABN: ${abn}\nEmail: ${email}\n\nLog in to the admin portal to review and activate this account.`,
-  }).catch(() => null); // non-fatal
+    subject,
+    text: `A new trade has registered and is awaiting activation.\n\nName: ${fullName}\nCompany: ${companyName}\nCategory: ${tradeCategory}\nABN: ${abn}\nLicence Number: ${licenceNumber}\nEmail: ${email}\n\n${verificationLine}\n\nLog in to the admin portal to review and activate:\n${process.env.APP_URL}/admin`,
+  }).catch(() => null);
 
-  res.status(201).json({ message: 'Registration successful. Your account is under review.', trade: result.rows[0] });
+  res.status(201).json({
+    message: licenceCheck.verified
+      ? 'Registration successful. Your NSW contractor licence has been verified. Your account is now under review for activation.'
+      : 'Registration received. Your account is under review — please ensure your contractor licence number and name match your NSW Fair Trading records.',
+    licenceVerified: licenceCheck.verified,
+    licenceStatus:   licenceCheck.status,
+  });
 }
 
 // ---------------------------------------------------------------------------

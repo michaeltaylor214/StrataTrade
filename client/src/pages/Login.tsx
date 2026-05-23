@@ -1,5 +1,5 @@
 import React, { useState, FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { AuthUser } from '../types';
 import { api } from '../services/api';
@@ -7,10 +7,14 @@ import { api } from '../services/api';
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const registeredAs   = searchParams.get('registered');
+  const licenceVerified = searchParams.get('verified');
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -55,6 +59,18 @@ export default function Login() {
 
         <div className="card p-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Sign in</h2>
+
+          {registeredAs === 'trade' && (
+            <div className={`mb-4 px-4 py-3 rounded-md text-sm border ${
+              licenceVerified === 'true'
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : 'bg-amber-50 border-amber-200 text-amber-800'
+            }`}>
+              {licenceVerified === 'true'
+                ? '✓ Registration successful — your NSW contractor licence has been verified. Your account is under review and will be activated shortly.'
+                : 'Registration received — your account is under review. Please ensure your contractor licence number and registered name match your NSW Fair Trading records.'}
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 px-4 py-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-700">

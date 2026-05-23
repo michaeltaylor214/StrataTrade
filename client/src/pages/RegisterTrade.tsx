@@ -12,6 +12,7 @@ export default function RegisterTrade() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [licenceVerified, setLicenceVerified] = useState<boolean | null>(null);
 
   function set(key: string, value: string) {
     setForm(f => ({ ...f, [key]: value }));
@@ -25,12 +26,16 @@ export default function RegisterTrade() {
 
     setLoading(true);
     try {
-      await api.post('/auth/register/trade', {
-        fullName: form.fullName, companyName: form.companyName, abn: form.abn,
-        tradeCategory: form.tradeCategory, licenceNumber: form.licenceNumber,
-        insuranceExpiryDate: form.insuranceExpiryDate, email: form.email, password: form.password,
-      });
-      navigate('/login?registered=trade');
+      const data = await api.post<{ message: string; licenceVerified: boolean; licenceStatus: string }>(
+        '/auth/register/trade',
+        {
+          fullName: form.fullName, companyName: form.companyName, abn: form.abn,
+          tradeCategory: form.tradeCategory, licenceNumber: form.licenceNumber,
+          insuranceExpiryDate: form.insuranceExpiryDate, email: form.email, password: form.password,
+        }
+      );
+      setLicenceVerified(data.licenceVerified ?? null);
+      navigate(`/login?registered=trade&verified=${data.licenceVerified}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to connect. Please try again.');
     } finally {
@@ -77,8 +82,15 @@ export default function RegisterTrade() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Licence number</label>
-              <input className="input" value={form.licenceNumber} onChange={e => set('licenceNumber', e.target.value)} />
+              <label className="label">NSW Contractor Licence No. *</label>
+              <input
+                className="input"
+                value={form.licenceNumber}
+                onChange={e => set('licenceNumber', e.target.value)}
+                placeholder="e.g. 123456C"
+                required
+              />
+              <p className="text-xs text-gray-400 mt-1">Verified against NSW Fair Trading register</p>
             </div>
             <div>
               <label className="label">Insurance expiry</label>
