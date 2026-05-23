@@ -16,6 +16,7 @@ export async function listTrades(req: Request, res: Response): Promise<void> {
   const result = await pool.query(
     `SELECT id, full_name, company_name, abn, trade_category, licence_number,
             insurance_expiry_date, email, is_active, rating, created_at,
+            nsw_licence_verified, nsw_licence_status,
             CASE WHEN insurance_expiry_date < NOW() + INTERVAL '30 days' THEN true ELSE false END AS insurance_expiring_soon
      FROM trades ${where} ORDER BY company_name`,
     params
@@ -28,7 +29,9 @@ export async function getTrade(req: Request, res: Response): Promise<void> {
 
   const result = await pool.query(
     `SELECT id, full_name, company_name, abn, trade_category, licence_number,
-            insurance_expiry_date, email, is_active, rating, created_at
+            insurance_expiry_date, email, is_active, rating, created_at,
+            nsw_licence_verified, nsw_licence_status,
+            CASE WHEN insurance_expiry_date < NOW() + INTERVAL '30 days' THEN true ELSE false END AS insurance_expiring_soon
      FROM trades WHERE id = $1`,
     [id]
   );
@@ -40,7 +43,8 @@ export async function getTradeProfile(req: Request, res: Response): Promise<void
   const user = req.user!;
   const result = await pool.query(
     `SELECT id, full_name, company_name, abn, trade_category, licence_number,
-            insurance_expiry_date, email, is_active, rating, created_at
+            insurance_expiry_date, email, is_active, rating, created_at,
+            nsw_licence_verified, nsw_licence_status
      FROM trades WHERE id = $1`,
     [user.userId]
   );

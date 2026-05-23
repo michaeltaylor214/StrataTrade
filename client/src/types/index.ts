@@ -165,6 +165,8 @@ export interface Trade {
   is_active: boolean;
   rating: number | null;
   insurance_expiring_soon: boolean;
+  nsw_licence_verified: boolean | null;
+  nsw_licence_status: string | null;
   created_at: string;
 }
 

@@ -71,6 +71,17 @@ export default function TradesList() {
                     <span className={`text-xs font-medium ${t.is_active ? 'text-green-600' : 'text-gray-400'}`}>
                       {t.is_active ? 'Active' : 'Inactive'}
                     </span>
+                    {!t.is_active && (
+                      <span className={`ml-2 text-xs px-1.5 py-0.5 rounded font-medium ${
+                        t.nsw_licence_verified === true  ? 'bg-green-100 text-green-700' :
+                        t.nsw_licence_verified === false ? 'bg-red-100 text-red-700' :
+                        'bg-gray-100 text-gray-500'
+                      }`}>
+                        {t.nsw_licence_verified === true  ? '✓ NSW' :
+                         t.nsw_licence_verified === false ? '✗ NSW' :
+                         'NSW?'}
+                      </span>
+                    )}
                   </td>
                   <td className="table-cell flex gap-3">
                     <Link to={`/admin/trades/${t.id}`} className="text-blue-600 hover:underline text-sm">View</Link>
